@@ -394,3 +394,47 @@ ggsave(plot.pie.Ntaxa_reptile, filename = "figs\\fig_pie_reptile.png", width=12,
 knitr::include_graphics("figs/fig_pie_reptile.png")
 ```
 
+## Threat Summary Figure (Fig. S4)
+```{r}
+unique_threat <- money.data %>%
+  filter_at(vars(u.threat_cat), any_vars(.>0)) %>%
+  dplyr::select(cat_threat_climate:cat_threat_pollution) %>%
+  pivot_longer(1:6, names_to = "Category", values_to = "Money") %>%
+  filter(Money > 0)
+
+threats_violin <- ggplot(unique_threat, aes(x = Category, y = Money)) + 
+  geom_violin(aes(col = Category, fill = Category)) + 
+  geom_boxplot(width = 0.2) + 
+  scale_color_manual(values = cat_colors22[c(1,13,11,20,5,18)]) +
+  scale_fill_manual(values = cat_colors22[c(1,13,11,20,5,18)]) +
+  scale_x_discrete(labels = u.threat_list) +
+  scale_y_log10(labels = comma) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(x="Threat Category", 
+       y="Grant Amount in USD (Log Scale)", 
+       title="Distributions of Unique Threat Grant Amounts") 
+
+# ggsave(threats_violin, filename = "figs\\threats_violin.png", width=12, height=7, dpi = 300)
+```
+
+```{r, eval=TRUE, fig.cap='Box and violin plots of the distributions of grant amounts for six drivers'}
+# show exported image
+knitr::include_graphics("figs/threats_violin.png")
+```
+
+## Summary statistics
+```{r}
+sum_table_threats <- money.data %>%
+  select(u.threat_cat) %>%
+  filter_all(any_vars(.>0)) %>%
+  pivot_longer(1:6, names_to = "Category", values_to = "Money") %>%
+  filter(Money > 0) %>%
+  group_by(Category) %>%
+  summarize(mn = mean(Money), 
+            medn = median(Money),
+            se = sd(Money)/sqrt(length(Money)))
+
+sum_table_threats
+```
+
